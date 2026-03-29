@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book de Productes</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #faf6f0; --sand: #e8dfd0; --terracota: #c4735a;
+    --dark: #1e1a17; --mid: #6b5e52; --light: #b5a899; --accent: #d4956a;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--dark); }
+
+  /* COVER */
+  .cover {
+    height: 100vh; min-height: 600px; background: var(--dark);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 60%, rgba(196,115,90,0.25) 0%, transparent 60%),
+                radial-gradient(ellipse at 75% 30%, rgba(212,149,106,0.15) 0%, transparent 50%);
+  }
+  .cover-subtitle { font-weight: 300; font-size:.85rem; letter-spacing:.35em; color:var(--accent); text-transform:uppercase; margin-bottom:1.5rem; position:relative; }
+  .cover-title { font-family:'Playfair Display',serif; font-size:clamp(3rem,8vw,7rem); font-weight:700; color:var(--cream); line-height:1; position:relative; }
+  .cover-title em { font-style:italic; color:var(--accent); }
+  .cover-line { width:60px; height:1px; background:var(--accent); margin:2rem auto; position:relative; }
+  .cover-count { font-size:.8rem; letter-spacing:.2em; color:var(--light); text-transform:uppercase; position:relative; }
+  .cover-scroll { position:absolute; bottom:2.5rem; left:50%; transform:translateX(-50%); color:var(--light); font-size:.7rem; letter-spacing:.2em; text-transform:uppercase; animation:bounce 2s infinite; }
+  .cover-scroll::after { content:' ↓'; }
+  @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+  /* NAV */
+  nav { position:sticky; top:0; z-index:100; background:rgba(250,246,240,.95); backdrop-filter:blur(10px); border-bottom:1px solid var(--sand); padding:0 2rem; display:flex; align-items:center; overflow-x:auto; scrollbar-width:none; }
+  nav::-webkit-scrollbar { display:none; }
+  .nav-logo { font-family:'Playfair Display',serif; font-size:.9rem; font-style:italic; color:var(--terracota); white-space:nowrap; margin-right:2rem; padding:1rem 0; }
+  nav a { text-decoration:none; color:var(--mid); font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; padding:1.1rem 1rem; white-space:nowrap; border-bottom:2px solid transparent; transition:color .2s,border-color .2s; }
+  nav a:hover { color:var(--terracota); border-bottom-color:var(--terracota); }
+
+  main { max-width:1400px; margin:0 auto; padding:4rem 2rem 6rem; }
+
+  .brand-section { margin-bottom:6rem; scroll-margin-top:70px; }
+  .brand-header { display:flex; align-items:baseline; gap:1.5rem; margin-bottom:2.5rem; padding-bottom:1rem; border-bottom:2px solid var(--dark); }
+  .brand-name { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,4vw,3rem); font-weight:700; color:var(--dark); }
+  .brand-count { font-size:.75rem; letter-spacing:.15em; text-transform:uppercase; color:var(--light); }
+
+  .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.5rem; }
+
+  .product-card { background:white; border:1px solid var(--sand); overflow:hidden; transition:transform .25s,box-shadow .25s; }
+  .product-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(30,26,23,.12); }
+
+  /* CAROUSEL */
+  .carousel { position:relative; width:100%; aspect-ratio:3/4; overflow:hidden; background:var(--sand); }
+  .carousel-track { display:flex; height:100%; transition:transform .35s ease; will-change:transform; }
+  .carousel-slide { min-width:100%; height:100%; flex-shrink:0; }
+  .carousel-slide img { width:100%; height:100%; object-fit:cover; display:block; }
+  .carousel-slide.empty {
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.6rem;
+    background:linear-gradient(135deg,var(--ph1,#e8dfd0),var(--ph2,#d9cfc4));
+  }
+  .carousel-slide.empty .ph-icon { font-size:2.5rem; }
+  .carousel-slide.empty .ph-ref { font-size:.58rem; letter-spacing:.15em; text-transform:uppercase; color:var(--mid); }
+
+  .carousel-btn {
+    position:absolute; top:50%; transform:translateY(-50%);
+    background:rgba(255,255,255,.88); border:none; width:28px; height:28px;
+    border-radius:50%; cursor:pointer; font-size:1rem; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    z-index:2; box-shadow:0 2px 8px rgba(0,0,0,.15);
+    opacity:0; transition:opacity .2s;
+  }
+  .carousel:hover .carousel-btn { opacity:1; }
+  .carousel-btn.prev { left:6px; }
+  .carousel-btn.next { right:6px; }
+  .carousel-btn:hover { background:white; }
+
+  .carousel-dots { position:absolute; bottom:7px; left:50%; transform:translateX(-50%); display:flex; gap:4px; z-index:2; }
+  .carousel-dot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.5); cursor:pointer; transition:background .2s; border:none; }
+  .carousel-dot.active { background:white; }
+
+  .product-info { padding:1rem 1.2rem 1.2rem; }
+  .product-type-tag { display:inline-block; font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:var(--terracota); margin-bottom:.4rem; }
+  .product-name { font-family:'Playfair Display',serif; font-size:.95rem; color:var(--dark); line-height:1.3; margin-bottom:.6rem; }
+  .product-sizes { display:flex; flex-wrap:wrap; gap:.3rem; }
+  .size-tag { background:var(--cream); border:1px solid var(--sand); font-size:.62rem; color:var(--mid); padding:.2rem .5rem; }
+  .product-ref { font-size:.62rem; color:var(--light); letter-spacing:.08em; margin-top:.5rem; }
+
+  footer { background:var(--dark); color:var(--light); text-align:center; padding:3rem 2rem; font-size:.75rem; letter-spacing:.1em; text-transform:uppercase; }
+  footer span { color:var(--accent); font-style:italic; font-family:'Playfair Display',serif; text-transform:none; font-size:.9rem; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <p class="cover-subtitle">Catàleg de Productes</p>
+  <h1 class="cover-title">Book de<br><em>Col·lecció</em></h1>
+  <div class="cover-line"></div>
+  <p class="cover-count" id="cover-count">—</p>
+  <div class="cover-scroll">Desplaça't</div>
+</div>
+
+<nav>
+  <div class="nav-logo">Book</div>
+  <a href="#louise-misha">Louise Misha</a>
+  <a href="#the-new-society">The New Society</a>
+  <a href="#tiny-cottons">Tiny Cottons</a>
+  <a href="#bobo-choses">Bobo Choses</a>
+  <a href="#mini-rodini">Mini Rodini</a>
+  <a href="#weekend-house">Weekend House Kids</a>
+  <a href="#organic-zoo">Organic Zoo</a>
+  <a href="#play-up">Play Up</a>
+  <a href="#bonmot">Bonmot</a>
+  <a href="#we-a-family">We A Family</a>
+  <a href="#altres">Altres</a>
+</nav>
+
+<main>
+  <section class="brand-section" id="louise-misha"><div class="brand-header"><h2 class="brand-name">Louise Misha</h2><span class="brand-count"></span></div><div class="product-grid" id="grid-louise-misha"></div></section>
+  <section class="brand-section" id="the-new-society"><div class="brand-header"><h2 class="brand-name">The New Society</h2><span class="brand-count"></span></div><div class="product-grid" id="grid-the-new-society"></div></section>
+  <section class="brand-section" id="tiny-cottons"><div class="brand-header"><h2 class="brand-name">Tiny Cottons</h2><span class="brand-count"></span></div><div class="product-grid" id="grid-tiny-cottons"></div></section>
+  <section class="brand-section" id="bobo-choses"><div class="brand-header"><h2 class="brand-name">Bobo Choses</h2><span class="brand-count"></span></div><div class="product-grid" id="grid-bobo-choses"></div></section>
+  <section class="brand-section" id="mini-rodini"><div class="brand-header"><h2 class="brand-name">Mini Rodini</h2><span class="brand-count"></span></div><div class="product-grid" id="grid-mini-rodini"></div></section>
+  <section class="brand-section" id="weekend-house"><div class="brand-header"><h2 class="brand-name">Weekend House Kids</h2><span class="brand-count"></span></div><div class="product-grid" id="grid-weekend-house"></div></section>
+  <section class="brand-section" id="organic-zoo"><div class="brand-header"><h2 class="brand-name">Organic Zoo</h2><span class="brand-count"></span></div><div class="product-grid" id="grid-organic-zoo"></div></section>
+  <section class="brand-section" id="play-up"><div class="brand-header"><h2 class="brand-name">Play Up</h2><span class="brand-count"></span></div><div class="product-grid" id="grid-play-up"></div></section>
+  <section class="brand-section" id="bonmot"><div class="brand-header"><h2 class="brand-name">Bonmot</h2><span class="brand-count"></span></div><div class="product-grid" id="grid-bonmot"></div></section>
+  <section class="brand-section" id="we-a-family"><div class="brand-header"><h2 class="brand-name">We A Family</h2><span class="brand-count"></span></div><div class="product-grid" id="grid-we-a-family"></div></section>
+  <section class="brand-section" id="altres"><div class="brand-header"><h2 class="brand-name">Altres marques</h2><span class="brand-count"></span></div><div class="product-grid" id="grid-altres"></div></section>
+</main>
+
+<footer>Book de productes · <span>Col·lecció</span> · Tots els drets reservats</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  COM AFEGIR IMATGES:
+//  A cada producte, afegeix les URLs o rutes locals al array "imgs"
+//  Pots posar tantes imatges com vulguis — el carrusel s'activa sol
+//  Exemple:
+//    imgs: ["fotos/S0242_1.jpg", "fotos/S0242_2.jpg", "fotos/S0242_3.jpg"]
+//  o amb URL externa:
+//    imgs: ["https://exemple.com/foto1.jpg"]
+// ══════════════════════════════════════════════════════════
+
+const products = [
+  // ── LOUISE MISHA ──────────────────────────────────────
+  { brand:"LOUISE MISHA", nom:"Camisa Palmeres Verda", tipus:"CAMISA", talles:["24M","12M","18M"], ref:"S0242", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Camisa Groga", tipus:"CAMISA", talles:["3M","6M"], ref:"S0241", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Pantalo Groc", tipus:"PANTALO", talles:["12M","18M"], ref:"S0258", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Shorts Grocs / Coral", tipus:"PANTALO", talles:["6M","9M","18M"], ref:"S0214", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Panties Grocs / Coral", tipus:"PANTALO", talles:["3M","6M","9M","12M"], ref:"P0233", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Bloomer Groc", tipus:"PANTALO", talles:["18M","24M"], ref:"B0218", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Vestit Groc Romper", tipus:"MONO", talles:["24M"], ref:"R0224", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Blusa Flors", tipus:"CAMISA", talles:["6M","9M"], ref:"B0196", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Vestit Flors Romper", tipus:"MONO", talles:["6M"], ref:"R0223", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Vestit Flors", tipus:"VESTIT", talles:["6M","9M"], ref:"D0210", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Pantalo Palmeres Verda", tipus:"PANTALO", talles:["3M","6M","9M"], ref:"B0261", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Body Gris", tipus:"BODY", talles:["3M"], ref:"B0251", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Vestit Blanca", tipus:"VESTIT", talles:["9M"], ref:"D0206", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Blusa Blanca", tipus:"CAMISA", talles:["12M","18M","24M"], ref:"B0197", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Vestit Crema amb Puntilla", tipus:"VESTIT", talles:["6M","9M","12M","24M"], ref:"D0209", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Vestit Tirants Crema", tipus:"VESTIT", talles:["24M"], ref:"D0211", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Bloomers Flors", tipus:"PANTALO", talles:["9M"], ref:"B0217", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Vestit Groc", tipus:"VESTIT", talles:["18M"], ref:"D0207", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Jaqueta Tropical Palmeres Gordita", tipus:"JAQUETA", talles:["3M","6M"], ref:"J0266", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Bloomer Short Groc", tipus:"PANTALO", talles:["24M"], ref:"B0262", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Pantalo Short Coral", tipus:"PANTALO", talles:["4Y"], ref:"S0260", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Camisa Llarga Flors", tipus:"CAMISA", talles:["6Y"], ref:"S0244", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Camisa Llarga Palmera Tropical", tipus:"CAMISA", talles:["6Y"], ref:"S0243", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Blusa Coral", tipus:"CAMISA", talles:["6Y"], ref:"B0198", imgs:[] },
+  { brand:"LOUISE MISHA", nom:"Jaqueta Blava Palmera", tipus:"JAQUETA", talles:["6Y"], ref:"J0267", imgs:[] },
+
+  // ── THE NEW SOCIETY ──────────────────────────────────
+  { brand:"THE NEW SOCIETY", nom:"Vestit Granate", tipus:"VESTIT", talles:["3M","12M","18M","6Y","8Y","10Y"], ref:"LUA3BABY", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Mono Borreguito Ovella", tipus:"MONO", talles:["6M","9M","12M"], ref:"GABRIELLEBABY", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Pantalo Jogging Gris", tipus:"PANTALO", talles:["3M","6M"], ref:"HUGOGRIS", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Jersei Gris o Blau Crew", tipus:"JERSEI", talles:["3M","6M","6Y","10Y"], ref:"CREW", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Romper Flors Lila", tipus:"MONO", talles:["9M"], ref:"DONNA", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Camisa Ratlles Granate", tipus:"CAMISA", talles:["3M","6M","12M","18M","24M"], ref:"ALEXGRANATE", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Pantalo Jogging Granate", tipus:"PANTALO", talles:["3M","6M","24M"], ref:"HUGOGRANATE", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Romper Blau Flors Vermelles", tipus:"MONO", talles:["3M","6M"], ref:"JANE", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Samarreta Thai Dhai Blava", tipus:"SAMARRETA", talles:["10Y"], ref:"DEEPBLUE", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Samarreta Sea Side of Life", tipus:"SAMARRETA", talles:["8Y"], ref:"BLUSH", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Blusa Blau Flors Vermella", tipus:"CAMISA", talles:["8Y"], ref:"OLIVIA", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Blusa Blau Gris Flors", tipus:"CAMISA", talles:["8Y","10Y"], ref:"SARAH", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Vestit Tye Dye Granate", tipus:"VESTIT", talles:["4Y","6Y","8Y"], ref:"OLIVIADRESS", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Blusa Tye Dye Granate", tipus:"CAMISA", talles:["2Y","4Y","8Y"], ref:"OLIVIABLUSE", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Jersei Lila Caputxa", tipus:"JERSEI", talles:["4Y","8Y"], ref:"DORIANPLUM", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Jersei Verd Crew", tipus:"JERSEI", talles:["4Y","10Y"], ref:"CREWKAKHI", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Shorts Texans", tipus:"PANTALO", talles:["4Y","8Y"], ref:"LOLA", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Pantalo Chandal Llarg Granate", tipus:"PANTALO", talles:["2Y","4Y","6Y","8Y"], ref:"HUGOPANTLILA", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Pantalo Pana Malva", tipus:"PANTALO", talles:["6Y"], ref:"MOTTPANT", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Pantalo Yoggi Caqui", tipus:"PANTALO", talles:["10Y"], ref:"PARISPANTS", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Pantalo Tejano Acampanat Blau", tipus:"PANTALO", talles:["6Y"], ref:"HOSIEPANTS", imgs:[] },
+  { brand:"THE NEW SOCIETY", nom:"Pantalo Curt Chandal Beige", tipus:"PANTALO", talles:["8Y"], ref:"HUGOBEIGE", imgs:[] },
+
+  // ── TINY COTTONS ─────────────────────────────────────
+  { brand:"TINY COTTONS", nom:"Cardigan Ratlles Vermell Rosa", tipus:"JERSEI", talles:["9M","12M","18M"], ref:"REF62", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Cardigan Ratlles Vermell Marro", tipus:"JERSEI", talles:["6M","12M","18M"], ref:"E73", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Cardigan Ratlles Blau Groc", tipus:"JERSEI", talles:["3M","6M"], ref:"E80", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Bloomer Ratlles Blau Groc", tipus:"PANTALO", talles:["6M","9M","18M"], ref:"240E", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Samarreta Top Ratlles Granate", tipus:"SAMARRETA", talles:["6M","9M"], ref:"185E56", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Shorts Ratlles Granate", tipus:"PANTALO", talles:["6M","9M"], ref:"186E56", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Jersei Cors Grocs", tipus:"JERSEI", talles:["3M","6M"], ref:"140E59", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Pantalo Cors Groc", tipus:"PANTALO", talles:["6M"], ref:"143E59", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Mono Curt Cors Groc", tipus:"MONO", talles:["6M","18M"], ref:"142E59", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Bloomers Piscina", tipus:"BANYADOR", talles:["3M","6M","9M"], ref:"267E80", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Body Taronja Cors Vermells", tipus:"BODY", talles:["6M"], ref:"189E15", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Bloomer Ratlles Vermell Marro", tipus:"PANTALO", talles:["6M","9M","12M","18M"], ref:"240E73", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Mono Borreguito Marro", tipus:"MONO", talles:["6M"], ref:"153D60", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Body Dolce", tipus:"BODY", talles:["3M","6M"], ref:"064E19", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Body Gos Dolce Far Niente", tipus:"BODY", talles:["9M"], ref:"003C62", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Body Luigi", tipus:"BODY", talles:["6M","12M"], ref:"063E42", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Body Curt Japones Flors Vermelles", tipus:"BODY", talles:["9M"], ref:"015E61", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Bikini Cors", tipus:"BANYADOR", talles:["2Y","6Y"], ref:"256E65", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Banyador Marro Reckel", tipus:"BANYADOR", talles:["4Y"], ref:"263E21", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Samarreta Tuscany", tipus:"SAMARRETA", talles:["4Y"], ref:"052E70", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Samarreta Japonesa", tipus:"SAMARRETA", talles:["4Y","6Y"], ref:"014E61", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Jaqueta Leopardo", tipus:"JAQUETA", talles:["4Y"], ref:"266D81", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Bomber Tiny Verda", tipus:"JAQUETA", talles:["2Y","4Y"], ref:"268D71", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Chubasquero Colorblock", tipus:"JAQUETA", talles:["4Y"], ref:"275E91", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Chubasquero Maduixes", tipus:"JAQUETA", talles:["6Y"], ref:"277E79", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Leggins Japonesa", tipus:"PANTALO", talles:["2Y","4Y"], ref:"019E61", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Romper Japones", tipus:"MONO", talles:["2Y"], ref:"016E61", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Leggins Gos Dolce Far Niente", tipus:"PANTALO", talles:["4Y"], ref:"005C62", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Vestit Gos Dolce Far Niente", tipus:"VESTIT", talles:["2Y"], ref:"006C62", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Romper Cors Groc", tipus:"MONO", talles:["2Y","6Y"], ref:"145E59", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Samarreta Ratlles Vermella", tipus:"SAMARRETA", talles:["2Y"], ref:"SS20-184-E56", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Camisa Llarga Negra Gat", tipus:"CAMISA", talles:["2Y","6Y"], ref:"REF07692", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Faldilla Ratlles Vermella", tipus:"FALDILLA", talles:["2Y","6Y"], ref:"SS20-188-E56", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Romper Ratlles Vermella", tipus:"MONO", talles:["2Y","6Y"], ref:"SS20-182-E56", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Cardigan Vermell i Rosa", tipus:"JERSEI", talles:["2Y","4Y","6Y"], ref:"REF365", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Gorro Ratlles Vermell Ros", tipus:"GORRO", talles:["U"], ref:"REF234", imgs:[] },
+  { brand:"TINY COTTONS", nom:"Bufanda Ratlles Vermella Rosa", tipus:"BUFANDA", talles:["U"], ref:"REF78", imgs:[] },
+
+  // ── BOBO CHOSES ──────────────────────────────────────
+  { brand:"BOBO CHOSES", nom:"Pantalo Marro Taronja Asteroide", tipus:"PANTALO", talles:["3M-6M","18M-24M","4Y-5Y"], ref:"219179", imgs:[] },
+  { brand:"BOBO CHOSES", nom:"Pantalo Llarg Tigres", tipus:"PANTALO", talles:["3M-6M","18M-24M"], ref:"12000064", imgs:[] },
+  { brand:"BOBO CHOSES", nom:"Samarreta Tigre Blava", tipus:"SAMARRETA", talles:["18M","24M","4Y-5Y","6Y-7Y"], ref:"12000006", imgs:[] },
+  { brand:"BOBO CHOSES", nom:"Pantalo Llarg Blau Planeta", tipus:"PANTALO", talles:["3M-6M","6M-12M"], ref:"219170", imgs:[] },
+  { brand:"BOBO CHOSES", nom:"Vestit Ratlles Blanques Verdes", tipus:"VESTIT", talles:["3M-6M","6M-12M","12M-18M","18M-24M","24M-36M"], ref:"12000086", imgs:[] },
+  { brand:"BOBO CHOSES", nom:"Pantalo Curt Ratlles Groc i Blau", tipus:"PANTALO", talles:["6Y-7Y","10Y-11Y"], ref:"12001071", imgs:[] },
+  { brand:"BOBO CHOSES", nom:"Romper Japones", tipus:"MONO", talles:["6Y"], ref:"016E61-BC", imgs:[] },
+  { brand:"BOBO CHOSES", nom:"Mitjons Yayoi", tipus:"MITJONS", talles:["24-26"], ref:"YAYOI", imgs:[] },
+
+  // ── MINI RODINI ──────────────────────────────────────
+  { brand:"MINI RODINI", nom:"Gorra Orejeras Leopardo", tipus:"GORRO", talles:["52-54"], ref:"1976510013", imgs:[] },
+  { brand:"MINI RODINI", nom:"Peucos Neu", tipus:"SABATES", talles:["13-15CM","16-19CM"], ref:"1976010399", imgs:[] },
+  { brand:"MINI RODINI", nom:"Mono Polar", tipus:"MONO", talles:["1M-4M"], ref:"1974010099", imgs:[] },
+  { brand:"MINI RODINI", nom:"Jaqueta Baseball Tutti Frutti", tipus:"JAQUETA", talles:["1M-4M","2Y-3Y","5Y-7Y"], ref:"1961010342", imgs:[] },
+  { brand:"MINI RODINI", nom:"Abric Ratlles Marro Vermell Blau", tipus:"JAQUETA", talles:["3Y-5Y"], ref:"197101116", imgs:[] },
+  { brand:"MINI RODINI", nom:"Tejano Groc", tipus:"PANTALO", talles:["3Y-5Y","5Y-7Y"], ref:"REF123", imgs:[] },
+
+  // ── WEEKEND HOUSE KIDS ───────────────────────────────
+  { brand:"WEEKEND HOUSE KIDS", nom:"Gorro Marro Bucket", tipus:"GORRO", talles:["S/M"], ref:"AW21/0127/S", imgs:[] },
+  { brand:"WEEKEND HOUSE KIDS", nom:"Body Groc Thank You Arbre", tipus:"BODY", talles:["7Y"], ref:"237", imgs:[] },
+  { brand:"WEEKEND HOUSE KIDS", nom:"Jersei Marro Osito Pajarita", tipus:"JERSEI", talles:["7Y-8Y"], ref:"0157/0708", imgs:[] },
+  { brand:"WEEKEND HOUSE KIDS", nom:"Jersei Marro Llana Perritos", tipus:"JERSEI", talles:["3Y-4Y","5Y-6Y"], ref:"0162/0506", imgs:[] },
+  { brand:"WEEKEND HOUSE KIDS", nom:"Pantalo Blau", tipus:"PANTALO", talles:["7Y-8Y","9Y-10Y","11Y-12Y"], ref:"BOTICELLI", imgs:[] },
+  { brand:"WEEKEND HOUSE KIDS", nom:"Pantalo Blau Gossos", tipus:"PANTALO", talles:["5Y-6Y"], ref:"0138/0506", imgs:[] },
+  { brand:"WEEKEND HOUSE KIDS", nom:"Faldilla Blava Gossos", tipus:"FALDILLA", talles:["3Y-5Y"], ref:"0135/0304", imgs:[] },
+  { brand:"WEEKEND HOUSE KIDS", nom:"Faldilla Llarga Vichy Vermella", tipus:"FALDILLA", talles:["5Y-6Y","7Y-8Y"], ref:"REF191", imgs:[] },
+  { brand:"WEEKEND HOUSE KIDS", nom:"Pantalo Llarg Vichy Vermell", tipus:"PANTALO", talles:["7Y-8Y"], ref:"REF190", imgs:[] },
+  { brand:"WEEKEND HOUSE KIDS", nom:"Short Ratlles Blau i Blanc", tipus:"PANTALO", talles:["3Y-4Y"], ref:"REF066", imgs:[] },
+  { brand:"WEEKEND HOUSE KIDS", nom:"Barret Ratlles Blau i Blanc", tipus:"GORRO", talles:["M/L"], ref:"REF111", imgs:[] },
+
+  // ── ORGANIC ZOO ──────────────────────────────────────
+  { brand:"ORGANIC ZOO", nom:"Capota Topos", tipus:"GORRO", talles:["0M-3M","3M-6M"], ref:"REF113", imgs:[] },
+  { brand:"ORGANIC ZOO", nom:"Capota Coto", tipus:"GORRO", talles:["3M-6M","6M-12M"], ref:"REF31", imgs:[] },
+  { brand:"ORGANIC ZOO", nom:"Capota Terrazzo", tipus:"GORRO", talles:["3M-6M"], ref:"REF33", imgs:[] },
+  { brand:"ORGANIC ZOO", nom:"Capota Blava Lluna", tipus:"GORRO", talles:["3M-6M"], ref:"REF112", imgs:[] },
+  { brand:"ORGANIC ZOO", nom:"Body Llarg Rosa Conill", tipus:"BODY", talles:["0M-3M","3M-6M"], ref:"RABBIT1", imgs:[] },
+  { brand:"ORGANIC ZOO", nom:"Samarreta Groga By James Wilson", tipus:"SAMARRETA", talles:["0M-3M"], ref:"REF47", imgs:[] },
+  { brand:"ORGANIC ZOO", nom:"Pantalo Terrazzo", tipus:"PANTALO", talles:["3M-6M","3Y-4Y"], ref:"TSP", imgs:[] },
+  { brand:"ORGANIC ZOO", nom:"Pantalo Groc Shorts Tovallola", tipus:"PANTALO", talles:["2Y-3Y"], ref:"SSSMOUSTARD", imgs:[] },
+
+  // ── PLAY UP ──────────────────────────────────────────
+  { brand:"PLAY UP", nom:"Abric Borreguito Marro", tipus:"JAQUETA", talles:["3M"], ref:"1AF11254", imgs:[] },
+  { brand:"PLAY UP", nom:"Conjunt Pantalo Samarreta Gris Fosc", tipus:"CONJUNT", talles:["3M"], ref:"0AF11550-G", imgs:[] },
+  { brand:"PLAY UP", nom:"Conjunt Pantalo Samarreta Marro", tipus:"CONJUNT", talles:["1M","3M"], ref:"0AF11550-M", imgs:[] },
+  { brand:"PLAY UP", nom:"Leggins Blancs Bellota", tipus:"PANTALO", talles:["1M"], ref:"REF144", imgs:[] },
+  { brand:"PLAY UP", nom:"Leggins Blancs Blau", tipus:"PANTALO", talles:["1M"], ref:"REF145", imgs:[] },
+
+  // ── BONMOT ───────────────────────────────────────────
+  { brand:"BONMOT", nom:"Banyador Short Blau", tipus:"BANYADOR", talles:["6M-12M"], ref:"SMSH-FBL", imgs:["FOTOS/BONMOT/SMSH-FBL/1.jpg"] },
+  { brand:"BONMOT", nom:"Samarreta Blanca", tipus:"SAMARRETA", talles:["6M-12M","18M-24M","4Y-5Y"], ref:"TSSM-IVO", imgs:["FOTOS/BONMOT/TSSM-IVO/1.jpg", "FOTOS/BONMOT/TSSM-IVO/2.jpg"] },
+  { brand:"BONMOT", nom:"Faldilla Llarga Ratlles Groga Taronja", tipus:"FALDILLA", talles:["6Y-7Y"], ref:"SKLG-MEL", imgs:[] },
+
+  // ── WE A FAMILY ──────────────────────────────────────
+  { brand:"WE A FAMILY", nom:"Jaqueta Blava Pintor", tipus:"JAQUETA", talles:["4Y-5Y","5Y-6Y"], ref:"156", imgs:[] },
+  { brand:"WE A FAMILY", nom:"Boti Multicolor Elm", tipus:"SABATES", talles:["27","29"], ref:"REF158", imgs:[] },
+  { brand:"WE A FAMILY", nom:"Bamba Otto", tipus:"SABATES", talles:["28"], ref:"REF159", imgs:[] },
+
+  // ── ALTRES ───────────────────────────────────────────
+  { brand:"NEW KIDS IN THE HOUSE", nom:"Gorra Orejeras Coral", tipus:"GORRO", talles:["Kids S","Baby L"], ref:"AVIATOR1", imgs:[] },
+  { brand:"NEW KIDS IN THE HOUSE", nom:"Gorra Orejeras Terracota", tipus:"GORRO", talles:["Baby L"], ref:"AVIATOR2", imgs:[] },
+  { brand:"NEW KIDS IN THE HOUSE", nom:"Gorra Orejeras Multicolor", tipus:"GORRO", talles:["Baby L"], ref:"AVIATOR3", imgs:[] },
+  { brand:"NEW KIDS IN THE HOUSE", nom:"Gorra Orejeras Verde Topos", tipus:"GORRO", talles:["Baby S"], ref:"AVIATOR4", imgs:[] },
+  { brand:"NEW KIDS IN THE HOUSE", nom:"Gorra Orejeras Flors Vermella", tipus:"GORRO", talles:["Baby M"], ref:"AVIATOR5", imgs:[] },
+  { brand:"STICKY LEMON", nom:"Motxilla Colorblock Taronja", tipus:"MOTXILLA", talles:["U"], ref:"1801392", imgs:[] },
+  { brand:"STICKY LEMON", nom:"Motxilla Colorblock Rosa", tipus:"MOTXILLA", talles:["U"], ref:"1801393", imgs:[] },
+  { brand:"DON FISHER", nom:"Motxilla Pop Aqua", tipus:"MOTXILLA", talles:["U"], ref:"07019", imgs:[] },
+  { brand:"DON FISHER", nom:"Ronyonera Peix", tipus:"ACCESSORI", talles:["U"], ref:"07040", imgs:[] },
+  { brand:"CHATTY FEET", nom:"Mitjons David", tipus:"MITJONS", talles:["24-26","27-30"], ref:"R.157", imgs:[] },
+  { brand:"KARMAKULA", nom:"Camisa Hawaiana Verda Palmera", tipus:"CAMISA", talles:["1Y-3Y"], ref:"REF01", imgs:[] },
+  { brand:"KARMAKULA", nom:"Camisa Hawaiana Blau Palmera", tipus:"CAMISA", talles:["3Y-6Y"], ref:"REF02", imgs:[] },
+  { brand:"KARMAKULA", nom:"Camisa Hawaiana Vermella Flors", tipus:"CAMISA", talles:["1Y-3Y","3Y-6Y"], ref:"REF06", imgs:[] },
+  { brand:"PARDOHATS", nom:"Bolso Medium", tipus:"BOLSO", talles:["U"], ref:"REFPARDO1", imgs:[] },
+  { brand:"PARDOHATS", nom:"Bolso Big", tipus:"BOLSO", talles:["U"], ref:"REFPARDO2", imgs:[] },
+  { brand:"PARDOHATS", nom:"Boina", tipus:"GORRO", talles:["U"], ref:"REFPARDO3", imgs:[] },
+  { brand:"PARDOHATS", nom:"Sombrero", tipus:"GORRO", talles:["U"], ref:"REFPARDO4", imgs:[] },
+  { brand:"DOIY", nom:"Mitjons Grocs i Verds Ice Pop Pinya", tipus:"MITJONS", talles:["U"], ref:"REF155", imgs:[] },
+];
+
+// ──────────────────────────────────────────────────────────
+const brandGridMap = {
+  "LOUISE MISHA":"grid-louise-misha","THE NEW SOCIETY":"grid-the-new-society",
+  "TINY COTTONS":"grid-tiny-cottons","BOBO CHOSES":"grid-bobo-choses",
+  "MINI RODINI":"grid-mini-rodini","WEEKEND HOUSE KIDS":"grid-weekend-house",
+  "ORGANIC ZOO":"grid-organic-zoo","PLAY UP":"grid-play-up",
+  "BONMOT":"grid-bonmot","WE A FAMILY":"grid-we-a-family",
+};
+const typeIcon = {
+  "CAMISA":"👔","JAQUETA":"🧥","VESTIT":"👗","MONO":"🎀","PANTALO":"👖",
+  "JERSEI":"🧶","BODY":"👶","SAMARRETA":"👕","BANYADOR":"🩱","GORRO":"🧢",
+  "SABATES":"👟","MITJONS":"🧦","MOTXILLA":"🎒","CONJUNT":"✨","FALDILLA":"👘",
+  "BOLSO":"👜","BUFANDA":"🧣","ACCESSORI":"🎯",
+};
+function colorFrom(s){let h=0;for(let c of s)h=(h*31+c.charCodeAt(0))%360;return`hsl(${h},28%,82%)`;}
+
+// Render all cards
+const altresGrid = document.getElementById('grid-altres');
+products.forEach((p, idx) => {
+  const grid = document.getElementById(brandGridMap[p.brand]) || altresGrid;
+  if (!grid) return;
+
+  const slides = p.imgs.length > 0 ? p.imgs : [null];
+  const multi = slides.length > 1;
+  const icon = typeIcon[p.tipus] || '✦';
+  const bg1 = colorFrom(p.nom), bg2 = colorFrom(p.ref);
+
+  const slidesHtml = slides.map((src, si) => src
+    ? `<div class="carousel-slide"><img src="${src}" alt="${p.nom}" loading="lazy"/></div>`
+    : `<div class="carousel-slide empty" style="--ph1:${bg1};--ph2:${bg2}">
+        <span class="ph-icon">${icon}</span>
+        <span class="ph-ref">${p.ref}</span>
+      </div>`
+  ).join('');
+
+  const btns = multi
+    ? `<button class="carousel-btn prev">‹</button><button class="carousel-btn next">›</button>`
+    : '';
+  const dots = multi
+    ? `<div class="carousel-dots">${slides.map((_,i)=>`<button class="carousel-dot${i===0?' active':''}" data-dot="${i}"></button>`).join('')}</div>`
+    : '';
+
+  const card = document.createElement('div');
+  card.className = 'product-card';
+  card.dataset.ref = p.ref;
+  card.innerHTML = `
+    <div class="carousel" id="c${idx}" data-cur="0" data-tot="${slides.length}">
+      <div class="carousel-track" id="t${idx}">${slidesHtml}</div>
+      ${btns}${dots}
+    </div>
+    <div class="product-info">
+      <span class="product-type-tag">${p.tipus}</span>
+      <div class="product-name">${p.nom}</div>
+      <div class="product-sizes">${p.talles.map(t=>`<span class="size-tag">${t}</span>`).join('')}</div>
+      <div class="product-ref">Ref: ${p.ref}</div>
+    </div>`;
+  grid.appendChild(card);
+});
+
+// Counts
+document.querySelectorAll('.brand-section').forEach(s => {
+  const g = s.querySelector('.product-grid');
+  const c = s.querySelector('.brand-count');
+  if (g && c) c.textContent = g.querySelectorAll('.product-card').length + ' productes';
+});
+document.getElementById('cover-count').textContent =
+  (Object.keys(brandGridMap).length + 1) + ' marques · ' + products.length + ' productes';
+
+// Carousel interaction
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.carousel-btn');
+  const dot = e.target.closest('.carousel-dot');
+  const el = btn || dot;
+  if (!el) return;
+  const car = el.closest('.carousel');
+  if (!car) return;
+  const id = car.id.slice(1);
+  const track = document.getElementById('t' + id);
+  const tot = +car.dataset.tot;
+  let cur = +car.dataset.cur;
+
+  if (btn) cur = btn.classList.contains('next') ? (cur+1)%tot : (cur-1+tot)%tot;
+  else cur = +dot.dataset.dot;
+
+  car.dataset.cur = cur;
+  track.style.transform = `translateX(-${cur*100}%)`;
+  car.querySelectorAll('.carousel-dot').forEach((d,i) => d.classList.toggle('active', i===cur));
+});
+</script>
+</body>
+</html>
