@@ -145,12 +145,10 @@
   .product-price-main { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--terracota); }
   .product-price-old  { font-size:.75rem; color:var(--light); text-decoration:line-through; }
 
-  /* BADGE DESCOMPTE */
-  .badge-discount {
-    display:inline-block; background:#c4735a; color:white;
-    font-size:.55rem; font-weight:600; letter-spacing:.08em;
-    padding:.15rem .4rem; border-radius:2px; vertical-align:middle;
-    margin-left:.2rem; align-self:center;
+  /* BADGE DESCOMPTE sobre imatge */
+  .badge-discount-img {
+    background: var(--terracota); color: white;
+    font-weight: 600;
   }
 
   /* STOCK */
@@ -266,12 +264,12 @@ function renderProducts(products) {
         priceHtml = `<div class="product-price-wrap">
           <span class="product-price-main">${p.outlet.toFixed(2)} €</span>
           <span class="product-price-old">${p.pvp.toFixed(2)} €</span>
-          <span class="badge-discount">−${discountPct}%</span>
         </div>`;
       } else {
         priceHtml = `<div class="product-price-wrap"><span class="product-price-main">${p.pvp.toFixed(2)} €</span></div>`;
       }
     }
+    const discountBadge = hasOutlet ? `<span class="badge badge-discount-img" style="left:.6rem;top:.6rem;">−${discountPct}%</span>` : '';
 
     const stockHtml = p.quantitat > 1 ? `<div class="product-stock">Estoc: ${p.quantitat} u.</div>` : '';
 
@@ -289,7 +287,7 @@ function renderProducts(products) {
           <div class="carousel-track" id="t${idx}">${slidesHtml}</div>
           ${btns}${dots}
         </div>
-        ${catBadge}${soldBadge}
+        ${catBadge}${soldBadge}${discountBadge}
       </div>
       <div class="product-info">
         <span class="product-type-tag">${p.tipus}</span>
