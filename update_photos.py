@@ -3,7 +3,7 @@
 update_photos.py
 -------------------
 Recorre la carpeta FOTOS\ i actualitza les imatges de cada producte
-dins del fitxer book_productes.html.
+dins del fitxer index.html.
 
 Estructura esperada de carpetes:
     FOTOS/
@@ -19,7 +19,7 @@ Estructura esperada de carpetes:
     python update_photos.py
 
     # O si el HTML o la carpeta FOTOS estan en una altra ruta:
-    python update_photos.py --html ruta/al/book_productes.html --fotos ruta/a/FOTOS
+    python update_photos.py --html ruta/al/index.html --fotos ruta/a/FOTOS
 """
 
 import os
@@ -121,7 +121,7 @@ def actualitza_html(html_path, fotos):
 
 def main():
     parser = argparse.ArgumentParser(description='Actualitza les fotos del book de productes.')
-    parser.add_argument('--html',  default='book_productes.html', help='Ruta al fitxer HTML')
+    parser.add_argument('--html',  default='index.html', help='Ruta al fitxer HTML')
     parser.add_argument('--fotos', default='FOTOS',               help='Ruta a la carpeta FOTOS')
     args = parser.parse_args()
 
