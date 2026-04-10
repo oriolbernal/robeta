@@ -35,37 +35,36 @@ def human_size(bytes):
 
 
 def optimize_image(path: Path, quality: int, max_width: int, dry_run: bool) -> tuple:
-    """
-    Retorna (size_before, size_after, skipped)
-    """
     size_before = path.stat().st_size
 
     if dry_run:
         return size_before, size_before, False
 
     with Image.open(path) as img:
-        # Converteix a RGB si cal (PNG amb alpha, etc.)
+        # ✅ Respeta la orientación EXIF antes de cualquier operación
+        try:
+            from PIL import ImageOps
+            img = ImageOps.exif_transpose(img)
+        except Exception:
+            pass
+
         if img.mode in ('RGBA', 'P', 'LA'):
             img = img.convert('RGB')
 
-        # Redimensiona si és més ampla que max_width
         if img.width > max_width:
             ratio = max_width / img.width
             new_size = (max_width, int(img.height * ratio))
             img = img.resize(new_size, Image.LANCZOS)
 
-        # Guarda com a WebP al mateix lloc, substitueix l'original
         webp_path = path.with_suffix('.webp')
         img.save(webp_path, 'WEBP', quality=quality, method=6)
 
     size_after = webp_path.stat().st_size
 
-    # Esborra l'original si no era ja webp
     if path.suffix.lower() != '.webp':
         path.unlink()
 
     return size_before, size_after, False
-
 
 def main():
     parser = argparse.ArgumentParser(description='Optimitza imatges a FOTOS/ per la web.')
