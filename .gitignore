@@ -1,1 +1,12 @@
-Robeta.xlsx
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Backups generados por update_products.py
+productsData_backup_*.js
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
