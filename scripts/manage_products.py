@@ -17,7 +17,6 @@ import sys
 import copy
 from pathlib import Path
 
-# Always resolve relative to this script's location (scripts/)
 PROJECT_DIR = Path(__file__).parent.parent
 CSV_FILE = PROJECT_DIR / "admin_products.csv"
 
@@ -61,7 +60,7 @@ def find_product(products, ref):
 
 
 def update_price(products, ref, new_price):
-    """Update outlet price for a product. Never touches pvp."""
+    """Update outlet price. Never touches pvp."""
     product = find_product(products, ref)
     if not product:
         print(f"❌ Product with ref '{ref}' not found.")
@@ -74,8 +73,14 @@ def update_price(products, ref, new_price):
 
 def mark_sold(products, ref, size=None):
     """
-    Mark a size as sold. If all sizes are exhausted, set venut=true.
-    If no sizes defined, mark whole product as sold.
+    Mark a product/size as sold.
+
+    Rules:
+    - Single-size product (e.g. talles=['U']): size arg optional,
+      auto-uses that size, adds to talles_esgotades, sets venut=true.
+    - Multi-size product: size must be specified.
+    - When all talles are in talles_esgotades: venut=true automatically.
+    - NEVER adds invented values like 'ALL_SOLD'.
     """
     product = find_product(products, ref)
     if not product:
@@ -83,19 +88,24 @@ def mark_sold(products, ref, size=None):
         return None, None
     before = copy.deepcopy(product)
 
-    if size:
-        if size not in product['talles']:
-            print(f"⚠️  Size '{size}' is not in talles for ref '{ref}'. Available: {product['talles']}")
-            print("   Proceeding anyway and adding to talles_esgotades.")
-        if size not in product['talles_esgotades']:
-            product['talles_esgotades'].append(size)
-        # Auto-mark as sold if all sizes exhausted
-        if product['talles'] and set(product['talles']) <= set(product['talles_esgotades']):
+    talles = product['talles']
+
+    if not size:
+        if len(talles) == 1:
+            size = talles[0]
+            print(f"ℹ️  Single-size product, using size '{size}'")
+        else:
+            # No sizes or multi-size without specifying → mark whole product sold
             product['venut'] = True
-            print(f"ℹ️  All sizes exhausted → venut set to true for ref '{ref}'")
-    else:
-        # No size → mark whole product sold
+            after = copy.deepcopy(product)
+            return before, after
+
+    if size not in product['talles_esgotades']:
+        product['talles_esgotades'].append(size)
+
+    if talles and set(talles) <= set(product['talles_esgotades']):
         product['venut'] = True
+        print(f"ℹ️  All sizes exhausted → venut=true for ref '{ref}'")
 
     after = copy.deepcopy(product)
     return before, after
